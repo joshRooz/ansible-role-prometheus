@@ -1,0 +1,37 @@
+---
+- name: Prometheus Node Exporter!
+  debug:
+    msg: | 
+      I [do not] need to compile myself for aarch64/arm64 and armv7.
+      https://github.com/prometheus/node_exporter/releases/download/v1.0.1/node_exporter-1.0.1.linux-armv7.tar.gz
+      https://github.com/prometheus/node_exporter/releases/download/v1.0.1/node_exporter-1.0.1.linux-arm64.tar.gz
+      https://github.com/prometheus/node_exporter/releases/download/v1.0.1/sha256sums.txt
+      docco - https://prometheus.io/docs/guides/node-exporter/
+
+- name: Install go and build tools
+  pacman:
+    name:
+      - gcc
+      - make
+      - go
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Go get node_exporter code
+  command: go get github.com/prometheus/node_exporter
+  args:
+    creates:  "{{ ansible_env['HOME'] }}/go/src/github.com/prometheus/node_exporter"
+
+- name: Compile node_exporter
+  make: 
+    chdir: "{{ ansible_env['HOME'] }}/go/src/github.com/prometheus/node_exporter"
+
+- name: Install node_exporter
+  command: "install {{ ansible_env['HOME'] }}/go/src/github.com/prometheus/node_exporter/node_exporter /usr/local/bin"
+  args:
+    creates: /usr/local/bin/node_exporter
+  become: yes
+  #register: cleanup
+
+- debug: msg="Can I cleanup /opt/go/src/... maybe with go clean?"
