@@ -1,24 +1,25 @@
 ---
-- name: Ensure architecture naming conventions match
+- name: Ensure architecture naming conventions match repository
   include_vars: "{{ ansible_architecture|lower }}.yml"
 
-- name: "Get node_exporter {{ \"%s%s\" | format('v',node_exporter_version) }}"
+- name: "Load {{ component }} variables"
+  include_vars: "{{ component|lower }}.yml"
+
+- name: "Get {{ component }} version {{ component_version }}"
   get_url:
-    dest: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ node_exporter_arch }}.tar.gz"
-    url: "https://github.com/prometheus/node_exporter/releases/download/{{ \"%s%s\" | format('v',node_exporter_version) }}/node_exporter-{{ node_exporter_version }}.linux-{{ node_exporter_arch }}.tar.gz"
-    checksum: "sha256:https://github.com/prometheus/node_exporter/releases/download/{{ \"%s%s\" | format('v',node_exporter_version) }}/sha256sums.txt"
-  register: tarball
+    dest: "{{ dest_tarball }}"
+    url: "{{ base_url }}/{{ release }}"
+    checksum: "sha256:{{ base_url }}/{{ checksum }}"
 
 - name: Extract binary from tarball
   unarchive:
-    src: "{{ tarball.dest }}"
+    src: "{{ dest_tarball }}"
     remote_src: yes
-    dest: /tmp
-    creates: "{{ tarball.dest | splitext | first }}"
+    dest: "{{ base_dir }}"
+    creates: "{{ absolute_path }}"
 
-- name: Install node_exporter
-  command: "install {{ tarball.dest | splitext | first | splitext | first }}/node_exporter /usr/local/bin"
+- name: "Install {{ component }}"
+  command: "install {{ absolute_path }}/{{ component }} /usr/local/bin"
   args:
-    creates: /usr/local/bin/node_exporter
+    creates: "/usr/local/bin/{{ component }}"
   become: yes
-  #FIXME: filtering applied here is one of those flaming bags old man clemens put out with his boots.

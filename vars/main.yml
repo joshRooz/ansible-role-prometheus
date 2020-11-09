@@ -1,2 +1,17 @@
 ---
-# vars file for prometheus-node-exporter
+# vars file for prometheus
+
+# Construct release string for other veriables
+release_info: "{{ component }}-{{ component_version }}.linux-{{ system_arch }}"
+
+# Download destination for Prometheus component
+base_dir: "/tmp"
+dest_tarball: "{{ base_dir }}/{{ release_info }}.tar.gz"
+
+# GitHub URL builder for component release tarball and checksum file
+base_url: "https://github.com/prometheus/{{ component }}/releases/download"
+release: "v{{ component_version }}/{{ release_info }}.tar.gz"
+checksum:  "v{{ component_version }}/sha256sums.txt"
+
+# Extracted binary location 
+absolute_path: "{{ base_dir }}/{{ release_info }}"

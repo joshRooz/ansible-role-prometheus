@@ -13,10 +13,20 @@ Role Variables
 
 A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
 
+defaults/main.yml:
+* component: prometheus|node_exporter 
+
+vars/main.yml:
+Majority of these setting should remain static unless Prometheus changes repo naming conventions and structuring.
+* base_dir: /tmp
+
+vars/<component>.yml:
+* component_version: specify the release you want to install
+
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+None
 
 Example Playbook
 ----------------
@@ -25,7 +35,7 @@ Including an example of how to use your role (for instance, with variables passe
 
     - hosts: servers
       roles:
-         - { role: username.rolename, component: server }
+         - { role: username.rolename, component: node_exporter }
 
 License
 -------

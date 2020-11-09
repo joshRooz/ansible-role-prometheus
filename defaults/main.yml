@@ -1,3 +1,5 @@
 ---
-# defaults file for prometheus-node-exporter
-node_exporter_version: 1.0.1
+# defaults file for prometheus
+
+# Prometheus component to setup (eg: prometheus -or- node_exporter)
+component: prometheus
