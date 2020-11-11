@@ -1,3 +1,5 @@
 ---
 # node_exporter version
 component_version: 1.0.1
+
+component_tasks: no

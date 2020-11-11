@@ -1,0 +1,49 @@
+{{ ansible_managed | comment }}
+
+# https://www.freedesktop.org/software/systemd/man/systemd.unit.html
+[Unit]
+Description={{ component }} {{ component_version }}
+After=network-online.target
+Requires=local-fs.target
+After=local-fs.target
+
+# https://www.freedesktop.org/software/systemd/man/systemd.service.html#
+[Service]
+Type=simple
+User={{ component }}
+Group={{ component }}
+ExecStart={{ binary_install_dir }}/{{ component }} {% if component == 'prometheus' %}\
+  --config.file={{ prometheus_config_dir }}/{{ component }}.yml \
+  --storage.tsdb.path={{ prometheus_db_dir }} \
+  --storage.tsdb.retention.time={{ prometheus_storage_retention }} \
+  --storage.tsdb.retention.size={{ prometheus_storage_retention_size }} \
+  --web.console.libraries={{ prometheus_config_dir }}/console_libraries \
+  --web.console.templates={{ prometheus_config_dir }}/consoles \
+  --web.listen-address={{ prometheus_web_listen_address }} \
+  --web.external-url={{ prometheus_web_external_url }}{% for flag, flag_value in prometheus_config_flags_extra.items() %}\
+  --{{ flag }}{% if flag_value %}={{ flag_value }}{% endif %} {% endfor %}
+{% endif %}
+
+CapabilityBoundingSet=CAP_SET_UID
+LimitNOFILE=65000
+LockPersonality=true
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectHome=true
+RemoveIPC=true
+RestrictSUIDSGID=true
+{% if component == 'prometheus' %}
+ReadWritePaths={{ prometheus_db_dir }}
+{% endif %}
+PrivateUsers=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectSystem=strict
+SyslogIdentifier={{ component }}
+Restart=always
+
+
+[Install]
+WantedBy=multi-user.target

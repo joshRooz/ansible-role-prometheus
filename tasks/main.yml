@@ -1,7 +1,4 @@
 ---
-- name: Ensure architecture naming conventions match repository
-  include_vars: "{{ ansible_architecture|lower }}.yml"
-
 - name: "Load {{ component }} variables"
   include_vars: "{{ component|lower }}.yml"
 
@@ -18,8 +15,38 @@
     dest: "{{ base_dir }}"
     creates: "{{ absolute_path }}"
 
+- name: "Create {{ component }} group"
+  group:
+    name: "{{ component }}"
+    system: yes
+    state: present
+  become: yes
+
+- name: "Create {{ component }} user"
+  user:
+    name: "{{ component }}"
+    group: "{{ component }}"
+    system: yes
+    create_home: no
+    shell: /usr/bin/nologin
+    home: "{{ prometheus_db_dir | default(omit) }}"
+  become: yes
+
 - name: "Install {{ component }}"
   command: "install {{ absolute_path }}/{{ component }} /usr/local/bin"
   args:
     creates: "/usr/local/bin/{{ component }}"
   become: yes
+
+- name: "Include {{ component }} specific tasks"
+  include_tasks: "{{ component|lower }}.yml"
+  when: component_tasks
+
+- name: Create systemd service unit
+  template:
+    src: systemd.service.j2
+    dest: "/usr/lib/systemd/system/{{ component }}.service"
+    mode: 0644
+  become: yes
+  notify:
+    - restart service

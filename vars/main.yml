@@ -1,8 +1,19 @@
 ---
 # vars file for prometheus
 
+# Map architecture naming conventions
+go_arch_map:
+  aarch64: "arm64"
+  armv6l: "armv6"
+  armv7l: "armv7"
+  i386: "386"
+  x86_64: "amd64"
+
+go_arch: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+
 # Construct release string for other veriables
-release_info: "{{ component }}-{{ component_version }}.linux-{{ system_arch }}"
+release_info: "{{ component }}-{{ component_version }}.linux-{{ go_arch }}"
 
 # Download destination for Prometheus component
 base_dir: "/tmp"

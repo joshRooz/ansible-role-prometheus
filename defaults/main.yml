@@ -3,3 +3,6 @@
 
 # Prometheus component to setup (eg: prometheus -or- node_exporter)
 component: prometheus
+
+# Installation directory for component
+binary_install_dir: /usr/local/bin

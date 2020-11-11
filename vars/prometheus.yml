@@ -1,3 +1,17 @@
 ---
 # prometheus server version
 component_version: 2.22.1
+
+component_tasks: yes
+
+# prometheus target directories
+prometheus_config_dir: /etc/prometheus
+prometheus_db_dir: /var/lib/prometheus
+
+prometheus_storage_retention: "30d"
+prometheus_storage_retention_size: "0"
+
+prometheus_web_listen_address: "0.0.0.0:9090"
+prometheus_web_external_url: ""
+
+prometheus_config_flags_extra: {}
