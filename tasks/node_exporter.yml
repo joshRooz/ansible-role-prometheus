@@ -1,0 +1,27 @@
+---
+- name: Create textfile directory
+  file:
+    path: "{{ node_exporter_textfile_dir }}"
+    state: directory
+    owner: "{{ component }}"
+    group: "{{ component }}"
+    mode: 0755
+  become: yes
+
+- name: Create config directory
+  file:
+    path: "{{ node_exporter_config_dir }}"
+    state: directory
+    mode: 0644
+  become: yes
+
+- name: Install configuration file
+  template:
+    src: "{{ component }}.yml.j2"
+    dest: "{{ node_exporter_config_dir }}/{{ component }}.yml"
+    owner: root
+    group: "{{ component }}"
+    mode: 0640
+  become: yes
+  notify:
+    - restart service

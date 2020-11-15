@@ -2,7 +2,13 @@
 
 # https://www.freedesktop.org/software/systemd/man/systemd.unit.html
 [Unit]
+{% if component == 'prometheus' %}
+Description=Prometheus {{ component_version }}
+{% elif component == 'node_exporter' %}
+Description=Node Exporter {{ component_version }}
+{% else %}
 Description={{ component }} {{ component_version }}
+{% endif %}
 After=network-online.target
 Requires=local-fs.target
 After=local-fs.target
@@ -12,7 +18,8 @@ After=local-fs.target
 Type=simple
 User={{ component }}
 Group={{ component }}
-ExecStart={{ binary_install_dir }}/{{ component }} {% if component == 'prometheus' %}\
+{% if component == 'prometheus' %}
+ExecStart={{ binary_install_dir }}/{{ component }} \
   --config.file={{ prometheus_config_dir }}/{{ component }}.yml \
   --storage.tsdb.path={{ prometheus_db_dir }} \
   --storage.tsdb.retention.time={{ prometheus_storage_retention }} \
@@ -22,8 +29,24 @@ ExecStart={{ binary_install_dir }}/{{ component }} {% if component == 'prometheu
   --web.listen-address={{ prometheus_web_listen_address }} \
   --web.external-url={{ prometheus_web_external_url }}{% for flag, flag_value in prometheus_config_flags_extra.items() %}\
   --{{ flag }}{% if flag_value %}={{ flag_value }}{% endif %} {% endfor %}
+{% elif component == 'node_exporter' %}
+ExecStart={{ binary_install_dir }}/{{ component }} \
+{%   for collector in node_exporter_enabled_collectors -%}
+{%     if not collector is mapping %}
+  --collector.{{ collector }} \
+{%     else -%}
+{%       set name, options = (collector.items()|list)[0] %}
+  --collector.{{ name }} \
+{%       for k,v in options|dictsort %}
+  --collector.{{ name }}.{{ k }}={{ v | quote }} \
+{%       endfor -%}
+{%     endif -%}
+{%   endfor -%}
+{%   for collector in node_exporter_disabled_collectors %}
+  --no-collector.{{ collector }} \
+{%   endfor %}
+  --web.listen-address={{ node_exporter_web_listen_address }}
 {% endif %}
-
 CapabilityBoundingSet=CAP_SET_UID
 LimitNOFILE=65000
 LockPersonality=true
